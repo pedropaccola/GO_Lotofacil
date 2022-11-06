@@ -19,20 +19,19 @@ type Game struct {
 	numbers []int
 }
 
+func (g *Game) String() string {
+	sa := make([]string, len(g.numbers))
+	for i, v := range g.numbers {
+		sa[i] = strconv.Itoa(v)
+	}
+	sl := strings.Join(sa, ", ")
+
+	return fmt.Sprintf("Aposta de %d dezenas: %s\n", g.bet, sl)
+}
+
 func NewGame(s GameSettings) *Game {
 	g := &Game{}
 
-	if err := g.init(); err != nil {
-		fmt.Println(err)
-	}
-
-	g.numbers = make([]int, 0, g.max)
-
-	return g
-}
-
-// TODO error
-func (g *Game) init() error {
 	switch g.Lt {
 	case 0: //lotofacil
 		g.min = 1
@@ -51,15 +50,11 @@ func (g *Game) init() error {
 		g.max = 80
 		g.bets = []int{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	default: //erro
-		return fmt.Errorf("aposta nao e possivel")
 	}
-	return nil
-}
 
-func (g *Game) generateNumbers() {
-	for i := g.min; i <= g.max; i++ {
-		g.numbers = append(g.numbers, i)
-	}
+	g.numbers = make([]int, 0, g.max)
+
+	return g
 }
 
 func (g *Game) CheckBet(bet int) (bool, error) {
@@ -70,6 +65,34 @@ func (g *Game) CheckBet(bet int) (bool, error) {
 		}
 	}
 	return false, fmt.Errorf("impossivel apostar (%d) dezenas", bet)
+}
+
+func (g *Game) Game() error {
+
+	for start := time.Now(); time.Since(start) < (time.Second * 5); {
+
+		g.generateNumbers()
+
+		rand.Shuffle(len(g.numbers), func(i, j int) {
+			g.numbers[i], g.numbers[j] = g.numbers[j], g.numbers[i]
+		})
+
+		g.numbers = g.numbers[:g.bet]
+
+		sort.Ints(g.numbers)
+
+		if b, _ := g.checkOddsEvensSequences(); b {
+			return nil
+		}
+
+	}
+	return fmt.Errorf("nao foi possivel gerar o jogo com as restricoes colocadas")
+}
+
+func (g *Game) generateNumbers() {
+	for i := g.min; i <= g.max; i++ {
+		g.numbers = append(g.numbers, i)
+	}
 }
 
 func (g *Game) checkOddsEvensSequences() (bool, error) {
@@ -103,36 +126,4 @@ func (g *Game) checkOddsEvensSequences() (bool, error) {
 		return false, fmt.Errorf("(%d) dezenas em sequencia", seq)
 	}
 	return true, nil
-}
-
-func (g *Game) Game() error {
-
-	for start := time.Now(); time.Since(start) < (time.Second * 5); {
-
-		g.generateNumbers()
-
-		rand.Shuffle(len(g.numbers), func(i, j int) {
-			g.numbers[i], g.numbers[j] = g.numbers[j], g.numbers[i]
-		})
-
-		g.numbers = g.numbers[:g.bet]
-
-		sort.Ints(g.numbers)
-
-		if b, _ := g.checkOddsEvensSequences(); b {
-			return nil
-		}
-
-	}
-	return fmt.Errorf("nao foi possivel gerar o jogo com as restricoes colocadas")
-}
-
-func (g *Game) String() string {
-	sa := make([]string, len(g.numbers))
-	for i, v := range g.numbers {
-		sa[i] = strconv.Itoa(v)
-	}
-	sl := strings.Join(sa, ", ")
-
-	return fmt.Sprintf("Aposta de %d dezenas: %s\n", g.bet, sl)
 }
