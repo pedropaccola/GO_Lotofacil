@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/pedropaccola/go-lotofacil/lotto"
@@ -86,7 +87,9 @@ func main() {
 			fmt.Println("Jogos Salvos!")
 			fmt.Println()
 		case 5:
-			return
+			os.Exit(0)
+		default:
+			os.Exit(-1)
 		}
 	}
 }
@@ -112,4 +115,19 @@ func menu() {
 	fmt.Println("4. Salvar jogos em um documento de texto.")
 	fmt.Println("5. Sair.")
 	fmt.Println()
+}
+
+func writeFile() error {
+	f, err := os.OpenFile("jogos.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	for _, v := range savedGames {
+		if _, err := f.Write([]byte(v)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
