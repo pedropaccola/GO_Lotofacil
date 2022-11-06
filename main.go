@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/pedropaccola/go-lotofacil/lotto"
 )
 
 // 	bet        int
@@ -15,26 +17,29 @@ import (
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
-	minE := 5
-	maxE := 10
-	minO := 3
-	maxO := 5
-	minS := 3
-	maxS := 4
+	s := lotto.GameSettings{
+		Lt:      lotto.Lotofacil,
+		MinEven: 5,
+		MaxEven: 10,
+		MinOdd:  3,
+		MaxOdd:  5,
+		MinSeq:  3,
+		MaxSeq:  4,
+	}
 
-	game := NewGame(Lotofacil)
+	jogo := lotto.NewGame(s)
 
-	_, err := game.checkBet(15)
+	_, err := jogo.CheckBet(15)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = game.Game(minE, maxE, minO, maxO, minS, maxS)
+	err = jogo.Game()
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	fmt.Println(game)
+	fmt.Println(jogo)
 	// 	for {
 	// 		input := greetings()
 

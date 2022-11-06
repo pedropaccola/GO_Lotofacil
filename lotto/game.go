@@ -1,4 +1,4 @@
-package main
+package lotto
 
 import (
 	"fmt"
@@ -9,17 +9,9 @@ import (
 	"time"
 )
 
-type Lotto int
-
-const (
-	Lotofacil = iota
-	Lotomania
-	Megasena
-	Quina
-)
-
 type Game struct {
-	lotto   Lotto
+	GameSettings
+
 	min     int
 	max     int
 	bet     int
@@ -27,23 +19,21 @@ type Game struct {
 	numbers []int
 }
 
-func NewGame(l Lotto) *Game {
-	g := &Game{
-		lotto: l,
-	}
+func NewGame(s GameSettings) *Game {
+	g := &Game{}
 
-	err := g.init()
-
-	if err != nil {
+	if err := g.init(); err != nil {
 		fmt.Println(err)
 	}
+
+	g.numbers = make([]int, 0, g.max)
 
 	return g
 }
 
 // TODO error
 func (g *Game) init() error {
-	switch g.lotto {
+	switch g.Lt {
 	case 0: //lotofacil
 		g.min = 1
 		g.max = 25
@@ -67,14 +57,12 @@ func (g *Game) init() error {
 }
 
 func (g *Game) generateNumbers() {
-	g.numbers = make([]int, 0, g.max)
-
 	for i := g.min; i <= g.max; i++ {
 		g.numbers = append(g.numbers, i)
 	}
 }
 
-func (g *Game) checkBet(bet int) (bool, error) {
+func (g *Game) CheckBet(bet int) (bool, error) {
 	for _, v := range g.bets {
 		if bet == v {
 			g.bet = bet
@@ -84,7 +72,7 @@ func (g *Game) checkBet(bet int) (bool, error) {
 	return false, fmt.Errorf("impossivel apostar (%d) dezenas", bet)
 }
 
-func (g *Game) checkOddsEvensSequences(minE, maxE, minO, maxO, minS, maxS int) (bool, error) {
+func (g *Game) checkOddsEvensSequences() (bool, error) {
 	e := 0
 	o := 0
 	s := 0
@@ -109,15 +97,15 @@ func (g *Game) checkOddsEvensSequences(minE, maxE, minO, maxO, minS, maxS int) (
 	}
 	seq++
 
-	if !(e <= maxE && e >= minE && o <= maxO && o >= minO) {
+	if !(e <= g.MaxEven && e >= g.MinEven && o <= g.MaxOdd && o >= g.MinOdd) {
 		return false, fmt.Errorf("(%d) dezenas pares e (%d) dezenas impares", e, o)
-	} else if !(seq <= maxS && seq >= minS) {
+	} else if !(seq <= g.MaxSeq && seq >= g.MinSeq) {
 		return false, fmt.Errorf("(%d) dezenas em sequencia", seq)
 	}
 	return true, nil
 }
 
-func (g *Game) Game(minE, maxE, minO, maxO, minS, maxS int) error {
+func (g *Game) Game() error {
 
 	for start := time.Now(); time.Since(start) < (time.Second * 5); {
 
@@ -131,7 +119,7 @@ func (g *Game) Game(minE, maxE, minO, maxO, minS, maxS int) error {
 
 		sort.Ints(g.numbers)
 
-		if b, _ := g.checkOddsEvensSequences(minE, maxE, minO, maxO, minS, maxS); b {
+		if b, _ := g.checkOddsEvensSequences(); b {
 			return nil
 		}
 

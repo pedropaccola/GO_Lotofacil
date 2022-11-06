@@ -1,3 +1,3 @@
-module github.com/pedropaccola/GO_Lotofacil
+module github.com/pedropaccola/go-lotofacil
 
-go 1.18
+go 1.19
