@@ -61,7 +61,7 @@ func main() {
 
 		switch input {
 		case 1:
-			lastGame = fmt.Sprintf()
+			lastGame =
 			counter++
 			fmt.Println()
 			fmt.Printf("Jogo %v: %v\n", counter, lastGame)
@@ -125,7 +125,7 @@ func writeFile() error {
 	defer f.Close()
 
 	for _, v := range savedGames {
-		if _, err := f.Write([]byte(v)); err != nil {
+		if _, err := f.Write([]byte(time.Now().Format("02/01/2006 - 15:04") + " " + v)); err != nil {
 			return err
 		}
 	}
