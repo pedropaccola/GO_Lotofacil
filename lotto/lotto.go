@@ -10,18 +10,11 @@ const (
 )
 
 func (l Lotto) String() string {
-	switch l {
-	case 0:
-		return "Lotofacil"
-	case 1:
-		return "Lotomania"
-	case 2:
-		return "Mega-Sena"
-	case 3:
-		return "Quina"
-	default:
-		return "Other"
-	}
+	return [...]string{
+		"Lotofacil",
+		"Lotomania",
+		"Megasena",
+		"Quina"}[l]
 }
 
 type GameSettings struct {
