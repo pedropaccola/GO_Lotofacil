@@ -1,15 +1,15 @@
 package lotto
 
-type Lotto int
+type LottoName int
 
 const (
-	Lotofacil Lotto = iota
+	Lotofacil LottoName = iota
 	Lotomania
 	Megasena
 	Quina
 )
 
-func (l Lotto) String() string {
+func (l LottoName) String() string {
 	return [...]string{
 		"Lotofacil",
 		"Lotomania",
@@ -17,8 +17,8 @@ func (l Lotto) String() string {
 		"Quina"}[l]
 }
 
-type GameSettings struct {
-	Lt      Lotto
+type BetSettings struct {
+	Lt      LottoName
 	Bet     int
 	MaxEven int
 	MaxOdd  int
