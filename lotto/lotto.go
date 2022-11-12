@@ -19,10 +19,8 @@ func (l Lotto) String() string {
 
 type GameSettings struct {
 	Lt      Lotto
+	Bet     int
 	MaxEven int
-	MinEven int
 	MaxOdd  int
-	MinOdd  int
 	MaxSeq  int
-	MinSeq  int
 }

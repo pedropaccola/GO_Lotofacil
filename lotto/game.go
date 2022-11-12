@@ -14,23 +14,25 @@ type Game struct {
 
 	min     int
 	max     int
-	bet     int
 	bets    []int
+	unique  map[int]bool
 	numbers []int
 }
 
 func (g *Game) String() string {
-	sa := make([]string, len(g.numbers))
+	strArr := make([]string, len(g.numbers))
 	for i, v := range g.numbers {
-		sa[i] = strconv.Itoa(v)
+		strArr[i] = strconv.Itoa(v)
 	}
-	sl := strings.Join(sa, ", ")
+	str := strings.Join(strArr, ", ")
 
-	return fmt.Sprintf("Aposta de %d dezenas: %s\n", g.bet, sl)
+	return fmt.Sprintf("Aposta de %d dezenas: %s\n", g.Bet, str)
 }
 
-func NewGame(s GameSettings) *Game {
-	g := &Game{}
+func NewGame(s GameSettings) (*Game, error) {
+	g := &Game{
+		GameSettings: s,
+	}
 
 	switch g.Lt {
 	case 0: //lotofacil
@@ -51,23 +53,55 @@ func NewGame(s GameSettings) *Game {
 		g.bets = []int{5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	default: //erro
 	}
-
-	g.numbers = make([]int, 0, g.max)
-
-	return g
+	if err := g.bet(); err != nil {
+		return nil, err
+	}
+	if err := g.constraints(); err != nil {
+		return nil, err
+	}
+	return g, nil
 }
 
-func (g *Game) CheckBet(bet int) (bool, error) {
-	for _, v := range g.bets {
-		if bet == v {
-			g.bet = bet
-			return true, nil
+func (g *Game) bet() error {
+	for _, bet := range g.bets {
+		if g.Bet == bet {
+			return nil
 		}
 	}
-	return false, fmt.Errorf("impossivel apostar (%d) dezenas", bet)
+	return fmt.Errorf("impossivel apostar (%d) dezenas", g.Bet)
 }
 
-func (g *Game) Game() error {
+func (g *Game) constraints() error {
+	oddCount := 0
+	evenCount := 0
+	for i := g.min; i <= g.max; i++ {
+		if i%2 == 0 {
+			evenCount++
+		} else {
+			oddCount++
+		}
+	}
+	if g.MaxEven+g.MaxOdd < g.Bet {
+		return fmt.Errorf(
+			"impossival aposta de (%d) pares e (%d) impares com (%d) dezenas",
+			g.MaxEven, g.MaxOdd, g.Bet)
+	}
+	if g.MaxEven > evenCount || g.MaxOdd > oddCount {
+		return fmt.Errorf(
+			"impossival aposta de (%d) pares e (%d) impares na %s",
+			g.MaxEven, g.MaxOdd, g.Lt)
+	}
+	if g.max-g.min < g.MaxSeq {
+		return fmt.Errorf(
+			"impossival sequencia de (%d) numeros na %s",
+			g.MaxSeq, g.Lt)
+	}
+	return nil
+}
+
+func (g *Game) Generate() error {
+	g.numbers = make([]int, g.Bet)
+	g.unique = make(map[int]bool)
 
 	for start := time.Now(); time.Since(start) < (time.Second * 5); {
 
