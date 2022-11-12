@@ -28,9 +28,10 @@ func main() {
 		Lt:      lotto.Lotofacil,
 		Bet:     15,
 		MaxEven: 15,
-		MaxOdd:  15,
-		MaxSeq:  10,
+		MaxOdd:  5,
+		MaxSeq:  3,
 	}
+
 	g, err := lotto.NewGame(s)
 	if err != nil {
 		panic(err)

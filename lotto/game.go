@@ -64,7 +64,6 @@ func NewGame(s BetSettings) (*Game, error) {
 func (g *Game) bet() error {
 	for _, bet := range g.possibleBets {
 		if g.Bet == bet {
-			fmt.Println("possible bet")
 			return nil
 		}
 	}
@@ -77,12 +76,15 @@ func (g *Game) betConstraints() error {
 			"impossival aposta de (%d) pares e (%d) impares com (%d) dezenas",
 			g.MaxEven, g.MaxOdd, g.Bet)
 	}
-	if g.max-g.min < g.MaxSeq {
+	if g.MaxSeq < 1 || g.MaxEven < 0 || g.MaxOdd < 0 {
 		return fmt.Errorf(
-			"impossival sequencia de (%d) numeros na %s",
-			g.MaxSeq, g.Lt)
+			"impossival sequencia de 0 digitos ou valores negativos")
 	}
-	fmt.Println("constraints ok")
+	if g.MaxSeq > g.Bet {
+		return fmt.Errorf(
+			"impossival sequencia de (%d) apostando (%d) dezenas",
+			g.MaxSeq, g.Bet)
+	}
 	return nil
 }
 
@@ -92,59 +94,82 @@ func (g *Game) Generate() error {
 
 	for len(g.Numbers) <= g.Bet {
 		i := rand.Intn(g.max) + 1
-		fmt.Printf("number generated %d\n", i)
 		if found[i] {
-			continue
+			if len(found) < g.max {
+				continue
+			} else {
+				return fmt.Errorf("nao foi possivel gerar o jogo")
+			}
 		}
 		found[i] = true
-		fmt.Printf("number unique %d\n", i)
 		if !g.generateConstraints(i) {
 			continue
 		}
 		g.Numbers = append(g.Numbers, i)
-		fmt.Printf("number appended %d\n", i)
 	}
-	sort.Slice(g.Numbers, func(i, j int) bool { return g.Numbers[i] < g.Numbers[j] })
+	sort.Slice(g.Numbers, func(i, j int) bool {
+		return g.Numbers[i] < g.Numbers[j]
+	})
 	return nil
 }
 
 func (g *Game) generateConstraints(check int) bool {
 	e := 0
 	o := 0
-	s := 0
+	s := 1
 	seq := 0
+	seqArr := make([]int, 0, len(g.Numbers))
 
 	if len(g.Numbers) == 0 {
-		return true
+		if check%2 == 0 {
+			if g.MaxEven > 0 {
+				return true
+			}
+		} else {
+			if g.MaxOdd > 0 {
+				return true
+			}
+		}
+		return false
 	}
 
-	for i, v := range g.Numbers {
+	// check odds/evens
+	for _, v := range g.Numbers {
+		seqArr = append(seqArr, v)
 		if v%2 == 0 {
 			e++
 		} else {
 			o++
 		}
+	}
+	if check%2 == 0 && e >= g.MaxEven {
+		fmt.Printf("falha 1, e=%d, %v\n", check, seqArr)
+		return false
+	}
+	if check%2 != 0 && o >= g.MaxOdd {
+		fmt.Printf("falha 2, e=%d, %v\n", check, seqArr)
+		return false
+	}
 
-		if i != 0 && g.Numbers[i] == g.Numbers[i-1]+1 {
+	// check sequences
+	seqArr = append(seqArr, check)
+	sort.Slice(seqArr, func(i, j int) bool {
+		return seqArr[i] < seqArr[j]
+	})
+	for i := range seqArr {
+		if i != 0 && seqArr[i] == seqArr[i-1]+1 {
 			s++
 		} else {
-			s = 0
+			s = 1
 		}
 
 		if s > seq {
 			seq = s
 		}
 	}
-	seq++
-
-	if e <= g.MaxEven && o <= g.MaxOdd && seq <= g.MaxSeq {
-		return true
+	if seq > g.MaxSeq {
+		fmt.Printf("falha 3, e=%d, %v\n", check, seqArr)
+		return false
 	}
-	return false
+	return true
 }
-
-// func (g *Game) generateNumbers() {
-// 	for i := g.min; i <= g.max; i++ {
-// 		g.numbers = append(g.numbers, i)
-// 	}
-// }
