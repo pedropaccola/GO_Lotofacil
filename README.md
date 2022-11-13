@@ -2,7 +2,9 @@
 
 Study Project//
 
-Game generator for the brazilian lotto called "Lotofacil" written in GO. 
+Personal Go project as requested by my wife's grandfather. A small lotto betting app that generates games based on a few constraints.
 
-Needs:
-Game.go/main.go
+TODO:
+Game interface, TUI with Termbox if feeling courageous.
+Improve logic and add more constraints.
+
