@@ -260,8 +260,16 @@ func (g *Game) saveFile() error {
 	}
 	defer file.Close()
 
-	for _, v := range g.savedBets {
-		file.WriteString(time.Now().Format("02/01/2006 15:04:05") + v + "\n")
+	str1 := fmt.Sprintf(" - Realizadas (%d) apostas de (%d) dezenas na (%s)", g.betQuantity, g.settings.Bet, g.settings.Lt)
+	str2 := fmt.Sprintf(" - Maximo de (%d) pares, (%d) impares e (%d) sequencias", g.settings.MaxEven, g.settings.MaxOdd, g.settings.MaxSeq)
+	file.WriteString(time.Now().Format("02/01/2006 15:04:05") + str1 + "\n")
+	file.WriteString(time.Now().Format("02/01/2006 15:04:05") + str2 + "\n")
+
+	for i, v := range g.savedBets {
+		file.WriteString(fmt.Sprintf("Jogo %d: ", i+1) + v + "\n")
 	}
+
+	file.WriteString("\n")
+
 	return nil
 }

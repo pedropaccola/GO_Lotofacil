@@ -30,9 +30,7 @@ func (b *Bet) String() string {
 	for i, v := range b.numbers {
 		strArr[i] = strconv.Itoa(v)
 	}
-	str := strings.Join(strArr, ", ")
-
-	return fmt.Sprintf("Aposta de %d dezenas: %s", b.settings.Bet, str)
+	return strings.Join(strArr, ", ")
 }
 
 func NewBet(s BetSettings) (*Bet, error) {
